@@ -21,6 +21,14 @@ uint16_t* reg16_ptr(CPU* cpu, Reg16 reg) {
     return &(cpu->*regs_16[reg]);
 }
 
+uint8_t reg8_get(CPU* cpu, Reg8 reg) {
+    return *reg8_ptr(cpu, reg);
+}
+
+uint16_t reg16_get(CPU* cpu, Reg16 reg) {
+    return *reg16_ptr(cpu, reg);
+}
+
 bool cpu_get_flag(CPU* cpu, Flag flag) {
     uint8_t flag_mask = 0x01 << flag;
     return (cpu->F & flag_mask) == flag_mask;
@@ -121,4 +129,22 @@ void cpu_inc_16(CPU* cpu, Reg16 reg) {
     uint16_t inc = 1;
     uint16_t* reg_ptr = reg16_ptr(cpu, reg);
     add_16(cpu, reg_ptr, &inc, false);
+}
+
+void cpu_dec_16(CPU* cpu, Reg16 reg) {
+    uint16_t dec = static_cast<uint16_t>(-1);
+    uint16_t* reg_ptr = reg16_ptr(cpu, reg);
+    add_16(cpu, reg_ptr, &dec, false);
+}
+
+void cpu_store_8(CPU* cpu, Reg16 addr_reg, Reg8 src) {
+    uint16_t addr = reg16_get(cpu, addr_reg);
+    uint8_t value = reg8_get(cpu, src);
+    mem_store_8(addr, value);
+}
+
+void cpu_load_8(CPU* cpu, Reg8 dest, Reg16 addr_reg) {
+    uint16_t addr = reg16_get(cpu, addr_reg);
+    uint8_t* dest_addr = reg8_ptr(cpu, dest);
+    *dest_addr = mem_load_8(addr);
 }

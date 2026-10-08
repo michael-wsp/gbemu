@@ -77,4 +77,12 @@ void cpu_add_8(CPU*, Reg8, Reg8);
 void cpu_adc_8(CPU*, Reg8, Reg8);
 void cpu_add_16(CPU*, Reg16, Reg16);
 
+void cpu_inc_8(CPU*, Reg8);
+void cpu_dec_8(CPU*, Reg8);
+void cpu_inc_16(CPU*, Reg16);
+void cpu_dec_16(CPU*, Reg16);
+
+void cpu_store_8(CPU*, Reg16, Reg8);
+void cpu_load_8(CPU*, Reg8, Reg16);
+
 #endif

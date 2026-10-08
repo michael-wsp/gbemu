@@ -34,7 +34,10 @@ INSTRUCTION(ld_8) {
     cpu_mv_8(cpu, reg_dest, reg_src);
 }
 
-INSTRUCTION(st_8_a) { uint8_t sel = opcode >> 4; }
+INSTRUCTION(st_8_mem) {
+    uint8_t sel = opcode >> 4;
+    
+}
 
 INSTRUCTION(jr) {
     uint8_t offset = cpu_fetch_8(cpu);
@@ -53,7 +56,25 @@ INSTRUCTION(jr) {
     }
 }
 
-INSTRUCTION(inc_8) { uint8_t reg = opcode >> 3; }
+INSTRUCTION(inc_8) {
+    Reg8 reg = Reg8((opcode >> 3) & 0b111);
+    cpu_inc_8(cpu, reg);
+}
+
+INSTRUCTION(dec_8) {
+    Reg8 reg = Reg8((opcode >> 3) & 0b111);
+    cpu_dec_8(cpu, reg);
+}
+
+INSTRUCTION(inc_16) {
+    Reg16 reg = Reg16(opcode >> 4);
+    cpu_inc_16(cpu, reg);
+}
+
+INSTRUCTION(dec_16) {
+    Reg16 reg = Reg16(opcode >> 4);
+    cpu_dec_16(cpu, reg);
+}
 
 static void init_main() { optable_main[0x00] = no_op; }
 
