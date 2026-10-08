@@ -9,78 +9,55 @@
 Instruction optable_main[N_INSTRS];
 Instruction optable_extended[N_INSTRS];
 
-INSTRUCTION(no_op) {
-    advance_pc(cpu, INSTR_SINGLE);
-}
+INSTRUCTION(no_op) { cpu_advance_pc(cpu, INSTR_SINGLE); }
 
 INSTRUCTION(stop) {
-    fetch_8(cpu);
+    cpu_fetch_8(cpu);
     cpu_stop(cpu);
 }
 
-static void mv_16_imm(uint8_t* reg1, uint8_t* reg2, uint16_t imm) {
-    *reg1 = imm >> 8;
-    *reg2 = imm & 0xFF;
+INSTRUCTION(ld_8_imm) {
+    Reg8 reg = Reg8((opcode >> 3) & 0b111);
+    uint8_t imm = cpu_fetch_8(cpu);
+    cpu_mv_8_imm(cpu, reg, imm);
 }
-
-static void add_8(CPU* cpu, )
 
 INSTRUCTION(ld_16_imm) {
-    uint8_t reg = opcode >> 4;
-    uint16_t imm = fetch_16(cpu);
-    switch (reg) {
-    case 0x0:
-        mv_16_imm(&cpu->B, &cpu->C, imm);
-        break;
-    case 0x1:
-        mv_16_imm(&cpu->D, &cpu->E, imm);
-        break;
-    case 0x2:
-        mv_16_imm(&cpu->H, &cpu->L, imm);
-        break;
-    case 0x3:
-        cpu->SP = imm;
-        break;
-    default:
-        break;
-    }
+    Reg16 reg = Reg16(opcode >> 4);
+    uint16_t imm = cpu_fetch_16(cpu);
+    cpu_mv_16_imm(cpu, reg, imm);
 }
 
-INSTRUCTION(st_8_a) {
-    uint8_t sel = opcode >> 4;
-    
+INSTRUCTION(ld_8) {
+    Reg8 reg_dest = Reg8((opcode >> 3) & 0b111);
+    Reg8 reg_src = Reg8(opcode & 0b111);
+    cpu_mv_8(cpu, reg_dest, reg_src);
 }
+
+INSTRUCTION(st_8_a) { uint8_t sel = opcode >> 4; }
 
 INSTRUCTION(jr) {
-    uint8_t offset = fetch_8(cpu);
-    uint8_t flag = opcode >> 4;
+    uint8_t offset = cpu_fetch_8(cpu);
+    uint8_t modifier = opcode >> 4;
     bool invert = (opcode & 0xF) == 0x8;
     bool jump = false;
-    if (flag == 0x1) {
+    if (modifier == 0x1) {
         jump = true;
     } else {
-        uint8_t flag_mask = flag == 0x2 ? FLAG_ZERO : FLAG_FCAR;
-        bool flag_set = cpu_get_flag(cpu, flag_mask);
-        jump = (flag_set && invert) || (!flag_set && !invert);
+        uint8_t flag = modifier == 0x2 ? Flag::Zero : Flag::FullCarry;
+        bool flag_set = cpu_get_flag(cpu, flag);
+        jump = flag_set == invert;
     }
     if (jump) {
-        advance_pc(cpu, offset);
+        cpu_advance_pc(cpu, offset);
     }
 }
 
-INSTRUCTION(inc_8) {
-    uint8_t reg = opcode >> 3;
+INSTRUCTION(inc_8) { uint8_t reg = opcode >> 3; }
 
-}
+static void init_main() { optable_main[0x00] = no_op; }
 
-static void init_main() {
-    optable_main[0x00] = no_op;
-
-}
-
-static void init() {
-
-}
+static void init() {}
 
 void gen_optables() {
     static bool initialized = false;

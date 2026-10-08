@@ -3,36 +3,62 @@
 
 #include <cstdint>
 
-const uint8_t FLAG_ZERO = 0b10000000;
-const uint8_t FLAG_SUB  = 0b01000000;
-const uint8_t FLAG_HCAR = 0b00100000;
-const uint8_t FLAG_FCAR = 0b00010000;
-
 struct Memory;
 
+enum Flag : uint8_t {
+    FullCarry = 4,
+    HalfCarry = 5,
+    Subtract = 6,
+    Zero = 7,
+};
+
 typedef struct CPU {
-    uint8_t A, B, C, D, E, H, L;
-    uint8_t F;
+    union {
+        uint16_t BC;
+        struct {
+            uint8_t C, B;
+        };
+    };
+    union {
+        uint16_t DE;
+        struct {
+            uint8_t E, D;
+        };
+    };
+    union {
+        uint16_t HL;
+        struct {
+            uint8_t L, H;
+        };
+    };
+    union {
+        uint16_t AF;
+        struct {
+            uint8_t F, A;
+        };
+    };
     uint16_t SP, PC;
     bool stopped;
 } CPU;
 
-enum Register8 : uint8_t {
-    A,
-    B,
-    C,
-    D,
-    E,
-    H,
-    L,
+enum Reg8 : uint8_t {
+    B = 0x0,
+    C = 0x1,
+    D = 0x2,
+    E = 0x3,
+    H = 0x4,
+    L = 0x5,
+    _HL = 0x6,
+    A = 0x7,
+    F = 0x8,
 };
 
-enum Register16 : uint8_t {
-    BC,
+enum Reg16 : uint8_t {
+    BC = 0,
     DE,
     HL,
-    AF,
     SP,
+    AF,
     PC,
 };
 
@@ -42,9 +68,13 @@ uint16_t cpu_fetch_16(CPU*);
 void cpu_stop(CPU*);
 bool cpu_get_flag(CPU*, uint8_t);
 
-void cpu_mv_8(CPU*, Register8, Register8);
-void cpu_mv_16(CPU*, Register16, Register16);
-void cpu_mv_8_imm(CPU*, Register8, uint8_t);
-void cpu_mv_16_imm(CPU*, Register16, uint16_t);
+void cpu_mv_8(CPU*, Reg8, Reg8);
+void cpu_mv_16(CPU*, Reg16, Reg16);
+void cpu_mv_8_imm(CPU*, Reg8, uint8_t);
+void cpu_mv_16_imm(CPU*, Reg16, uint16_t);
+
+void cpu_add_8(CPU*, Reg8, Reg8);
+void cpu_adc_8(CPU*, Reg8, Reg8);
+void cpu_add_16(CPU*, Reg16, Reg16);
 
 #endif
